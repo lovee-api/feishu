@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}电商BI看板{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>电商数据中台</h2>
+                <p>企业级 BI 系统</p>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <a href="/dashboard/sales" class="nav-link">
+                        <li class="nav-item {% if active_page == 'sales' %}active{% endif %}">
+                            <span class="icon">💰</span> 销售与漏斗分析
+                        </li>
+                    </a>
+                    <a href="/dashboard/service" class="nav-link">
+                        <li class="nav-item {% if active_page == 'service' %}active{% endif %}">
+                            <span class="icon">😊</span> 服务与留存分析
+                        </li>
+                    </a>
+                    <a href="/dashboard/feishu-test" class="nav-link">
+                        <li class="nav-item {% if active_page == 'feishu' %}active{% endif %}">
+                            <span class="icon">📊</span> 飞书数据看板
+                        </li>
+                    </a>"
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="header-title">
+                    <h1>{% block page_title %}数据大屏{% endblock %}</h1>
+                    <p class="subtitle">实时性能监控中心</p>
+                </div>
+                <div class="header-actions">
+                    <span id="current-time"></span>
+                    <button class="refresh-btn" onclick="location.reload()">刷新数据</button>
+                </div>
+            </header>
+
+            <!-- Dynamic Content Block -->
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

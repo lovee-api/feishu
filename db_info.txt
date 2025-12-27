@@ -1,0 +1,21 @@
+Tables found: [('trips',), ('stations',)]
+
+--- Structure of trips ---
+Columns: ['id', 'duration', 'start_date', 'start_station', 'end_date', 'end_station', 'bike_number', 'sub_type', 'zip_code', 'birth_date', 'gender']
+
+--- Sample data from trips ---
+(1, 9, '2011-07-28 10:12:00', 23, '2011-07-28 10:12:00', 23, 'B00468', 'Registered', "'97217", 1976.0, 'Male')
+(2, 220, '2011-07-28 10:21:00', 23, '2011-07-28 10:25:00', 23, 'B00554', 'Registered', "'02215", 1966.0, 'Male')
+(3, 56, '2011-07-28 10:33:00', 23, '2011-07-28 10:34:00', 23, 'B00456', 'Registered', "'02108", 1943.0, 'Male')
+(4, 64, '2011-07-28 10:35:00', 23, '2011-07-28 10:36:00', 23, 'B00554', 'Registered', "'02116", 1981.0, 'Female')
+(5, 12, '2011-07-28 10:37:00', 23, '2011-07-28 10:37:00', 23, 'B00554', 'Registered', "'97214", 1983.0, 'Female')
+
+--- Structure of stations ---
+Columns: ['id', 'station', 'municipality', 'lat', 'lng']
+
+--- Sample data from stations ---
+(3, 'Colleges of the Fenway', 'Boston', '42.340021', '-71.100812')
+(4, 'Tremont St. at Berkeley St.', 'Boston', '42.345392', '-71.069616')
+(5, 'Northeastern U / North Parking Lot', 'Boston', '42.341814', '-71.090179')
+(6, 'Cambridge St. at Joy St.', 'Boston', '42.361284999999995', '-71.06514')
+(7, 'Fan Pier', 'Boston', '42.353412', '-71.044624')

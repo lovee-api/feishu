@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}飞书数据看板{% endblock %}
+{% block page_title %}飞书在线表格 BI 看板{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<section class="kpi-grid">
+    <div class="kpi-card">
+        <div class="icon-box orders-icon">💰</div>
+        <div class="kpi-content">
+            <h3>总销售额 (Revenue)</h3>
+            <p class="kpi-value" id="feishu-sales">--</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box time-icon">👥</div>
+        <div class="kpi-content">
+            <h3>总访客数 (Visitors)</h3>
+            <p class="kpi-value" id="feishu-visitors">--</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box warehouse-icon">🛒</div>
+        <div class="kpi-content">
+            <h3>支付订单数 (Orders)</h3>
+            <p class="kpi-value" id="feishu-orders">--</p>
+        </div>
+    </div>
+</section>
+
+<!-- Trend Chart -->
+<section class="charts-grid upper-charts">
+    <div class="chart-container large">
+        <div class="chart-header">
+            <h2>📈 流量与营收趋势 (飞书实时数据)</h2>
+        </div>
+        <div id="feishuTrendChart" class="chart-canvas"></div>
+    </div>
+</section>
+
+<!-- Funnel & Service -->
+<section class="charts-grid lower-charts">
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>🔻 转化漏斗 (访客→加购→支付)</h2>
+        </div>
+        <div id="feishuFunnelChart" class="chart-canvas"></div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>⏱️ 服务指标监控</h2>
+        </div>
+        <div id="feishuServiceChart" class="chart-canvas"></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function fetchData(url) {
+        try {
+            const response = await fetch(url);
+            return await response.json();
+        } catch (error) {
+            console.error('Fetch error:', error);
+            return null;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        // 1. Load KPIs
+        const overview = await fetchData('/api/feishu/overview');
+        if (overview && !overview.error) {
+            document.getElementById('feishu-sales').textContent = `¥${overview.total_sales.toLocaleString()}`;
+            document.getElementById('feishu-visitors').textContent = overview.total_visitors.toLocaleString();
+            document.getElementById('feishu-orders').textContent = overview.total_orders.toLocaleString();
+        }
+
+        // 2. Load Trend Chart
+        const trend = await fetchData('/api/feishu/trend');
+        if (trend && trend.length > 0) {
+            const chart = echarts.init(document.getElementById('feishuTrendChart'));
+            chart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['销售额', '访客数'] },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: trend.map(item => item.date) },
+                yAxis: [
+                    { type: 'value', name: '销售额 (元)', position: 'left' },
+                    { type: 'value', name: '访客数 (人)', position: 'right' }
+                ],
+                series: [
+                    {
+                        name: '销售额', type: 'line', smooth: true, yAxisIndex: 0,
+                        data: trend.map(item => item.sales),
+                        itemStyle: { color: '#ef4444' },
+                        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(239,68,68,0.5)' }, { offset: 1, color: 'rgba(239,68,68,0.05)' }]) }
+                    },
+                    {
+                        name: '访客数', type: 'bar', yAxisIndex: 1,
+                        data: trend.map(item => item.visitors),
+                        itemStyle: { color: '#3b82f6', opacity: 0.3 }
+                    }
+                ]
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // 3. Load Funnel Chart
+        const funnel = await fetchData('/api/feishu/funnel');
+        if (funnel && !funnel.error) {
+            const chart = echarts.init(document.getElementById('feishuFunnelChart'));
+            chart.setOption({
+                tooltip: { trigger: 'item' },
+                series: [{
+                    name: '全店转化漏斗', type: 'funnel', left: '10%', width: '80%', sort: 'descending',
+                    label: { show: true, position: 'inside', formatter: '{b}: {c}' },
+                    data: [
+                        { value: funnel.visitors, name: '访客' },
+                        { value: funnel.cart, name: '加购' },
+                        { value: funnel.orders, name: '支付订单' }
+                    ]
+                }]
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // 4. Load Service Metrics (Gauge)
+        const service = await fetchData('/api/feishu/service');
+        if (service && !service.error) {
+            const chart = echarts.init(document.getElementById('feishuServiceChart'));
+            chart.setOption({
+                series: [{
+                    type: 'gauge', startAngle: 180, endAngle: 0, min: 0, max: 240,
+                    axisLine: { lineStyle: { width: 30, color: [[0.2, '#10b981'], [0.5, '#3b82f6'], [1, '#ef4444']] } },
+                    pointer: { itemStyle: { color: 'auto' } },
+                    detail: { formatter: '{value}小时', fontSize: 20 },
+                    title: { show: true, offsetCenter: [0, '40%'], textStyle: { fontSize: 14 } },
+                    data: [{ value: service.logistics_hours, name: '物流平均时效' }]
+                }]
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
+    });
+</script>
+{% endblock %}

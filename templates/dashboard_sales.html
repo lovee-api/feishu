@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}销售与转换漏斗{% endblock %}
+{% block page_title %}流量与销售分析{% endblock %}
+
+{% block content %}
+<!-- Finance KPIs -->
+<section class="kpi-grid">
+    <div class="kpi-card">
+        <div class="icon-box orders-icon">💰</div>
+        <div class="kpi-content">
+            <h3>总销售额 (Revenue)</h3>
+            <p class="kpi-value" id="sales-total">--</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box time-icon">👥</div>
+        <div class="kpi-content">
+            <h3>总访客数 (Visitors)</h3>
+            <p class="kpi-value" id="sales-visitors">--</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box warehouse-icon">🛒</div>
+        <div class="kpi-content">
+            <h3>支付订单数 (Orders)</h3>
+            <p class="kpi-value" id="sales-orders">--</p>
+        </div>
+    </div>
+</section>
+
+<!-- Deep Dive Charts -->
+<section class="charts-grid upper-charts">
+    <div class="chart-container large">
+        <div class="chart-header">
+            <h2>流量与营收趋势 (双轴分析)</h2>
+        </div>
+        <div id="salesTrendChart" class="chart-canvas"></div>
+    </div>
+</section>
+
+<section class="charts-grid lower-charts">
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>转化漏斗 (访客 -> 加购 -> 支付)</h2>
+        </div>
+        <div id="funnelChart" class="chart-canvas"></div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>用户性别分布</h2>
+        </div>
+        <div id="demographicsChart" class="chart-canvas"></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // We reuse some functions but add new ones for Funnel
+        fetchSalesData();
+        renderDemographicsChart();
+        fetchFunnelData();
+    });
+
+    async function fetchFunnelData() {
+        // Real API: /api/sales/funnel
+        const data = await fetchData('/api/sales/funnel');
+        if (data) {
+            const chart = echarts.init(document.getElementById('funnelChart'));
+            chart.setOption({
+                tooltip: { trigger: 'item' },
+                legend: { data: ['访客', '加购', '支付订单'] },
+                series: [{
+                    name: '全店转化漏斗', type: 'funnel', left: '10%', width: '80%',
+                    sort: 'descending',
+                    label: { show: true, position: 'inside', formatter: '{b}: {c}' },
+                    data: [
+                        { value: data.visitors, name: '访客' },
+                        { value: data.cart, name: '加购' },
+                        { value: data.orders, name: '支付订单' }
+                    ]
+                }]
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
+    }
+</script>
+{% endblock %}

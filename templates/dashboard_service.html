@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}服务与留存{% endblock %}
+{% block page_title %}服务质量与客户留存{% endblock %}
+
+{% block content %}
+<section class="kpi-grid">
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#e0e7ff; color:#4f46e5;">💬</div>
+        <div class="kpi-content">
+            <h3>客服平均响应时长</h3>
+            <p class="kpi-value" id="svc-response">-- s</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#dcfce7; color:#16a34a;">🚚</div>
+        <div class="kpi-content">
+            <h3>物流平均时效</h3>
+            <p class="kpi-value" id="svc-logistics">-- h</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#fee2e2; color:#dc2626;">💸</div>
+        <div class="kpi-content">
+            <h3>退款处理时长</h3>
+            <p class="kpi-value" id="svc-refund">-- 天</p>
+        </div>
+    </div>
+</section>
+
+<section class="charts-grid lower-charts">
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>会员等级分布 (新老客占比)</h2>
+        </div>
+        <!-- Placeholder: Actually this chart is confusingly named 'userChart' in JS but used for Tier Distribution -->
+        <div id="userChart" class="chart-canvas"></div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>物流时效监控 (目标: <48h)< /h2>
+        </div>
+        <div id="retentionChart" class="chart-canvas"></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Reuse UserChart for Tiers
+        renderUserChart();
+        fetchServiceMetrics();
+    });
+
+    async function fetchServiceMetrics() {
+        const data = await fetchData('/api/service/metrics');
+        if (data) {
+            document.getElementById('svc-response').textContent = `${data.chat_seconds} 秒`;
+            document.getElementById('svc-logistics').textContent = `${data.logistics_hours} 小时`;
+            document.getElementById('svc-refund').textContent = `${data.refund_days} 天`;
+
+            // Render Retention/Gauge mock
+            const chart = echarts.init(document.getElementById('retentionChart'));
+            chart.setOption({
+                series: [{
+                    type: 'gauge',
+                    startAngle: 180, endAngle: 0,
+                    min: 0, max: 240,
+                    itemStyle: { color: '#58D9F9' },
+                    pointer: { itemStyle: { color: 'auto' } },
+                    axisLine: { lineStyle: { width: 30, color: [[0.2, '#10b981'], [0.5, '#3b82f6'], [1, '#ef4444']] } },
+                    detail: { formatter: '{value}小时', fontSize: 20 },
+                    title: { show: true, offsetCenter: [0, '40%'], textStyle: { fontSize: 16 } },
+                    data: [{ value: data.logistics_hours, name: '平均耗时' }]
+                }]
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
+    }
+</script>
+{% endblock %}
