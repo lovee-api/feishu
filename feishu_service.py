@@ -38,7 +38,7 @@ class FeishuSheetService:
             print(f"❌ Failed to get token: {data}")
             return None
     
-    def get_sheet_data(self, spreadsheet_token, sheet_id, range_notation="A1:Z1000"):
+    def get_sheet_data(self, spreadsheet_token, sheet_id, range_notation="A1:DZ1000"):
         """
         Read data from Feishu Sheet
         """
@@ -78,6 +78,7 @@ class FeishuSheetService:
     def parse_to_daily_sales(self, raw_data):
         """
         Convert raw Feishu data to DailySales format
+        Automatically detects the header row by looking for known column names
         """
         records = []
         
@@ -85,17 +86,29 @@ class FeishuSheetService:
             print(f"⚠️ Insufficient data: {len(raw_data) if raw_data else 0} rows")
             return records
         
-        headers = raw_data[0]
-        print(f"📋 Headers: {headers}")
+        # Known column names to detect header row
+        known_headers = ['统计日期', '日期', '开播场次', '直播间访问人数', '访客数', '支付金额', '活动节点']
         
-        for row in raw_data[1:]:
+        # Find the header row (the row that contains known column names)
+        header_row_index = 0
+        for i, row in enumerate(raw_data):
+            row_str = ' '.join([str(cell) for cell in row if cell])
+            if any(h in row_str for h in known_headers):
+                header_row_index = i
+                break
+        
+        headers = raw_data[header_row_index]
+        print(f"📋 Found headers at row {header_row_index}: {headers[:10]}...")  # Only show first 10
+        
+        # Parse data rows (after header)
+        for row in raw_data[header_row_index + 1:]:
             record = {}
             for i, header in enumerate(headers):
-                if i < len(row):
+                if header and i < len(row):  # Skip None headers
                     record[str(header)] = row[i]
-                else:
-                    record[str(header)] = None
-            records.append(record)
+            if record:  # Only add non-empty records
+                records.append(record)
         
         print(f"✅ Parsed {len(records)} records")
         return records
+

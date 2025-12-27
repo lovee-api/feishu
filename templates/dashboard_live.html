@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}直播间数据看板{% endblock %}
+{% block page_title %}📺 直播间运营分析{% endblock %}
+
+{% block content %}
+<!-- 核心 KPI Cards - 第一行 -->
+<section class="kpi-grid">
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#fef3c7; color:#d97706;">💰</div>
+        <div class="kpi-content">
+            <h3>直播间 GMV</h3>
+            <p class="kpi-value" id="live-gmv">加载中...</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#dcfce7; color:#16a34a;">📈</div>
+        <div class="kpi-content">
+            <h3>直播间营收</h3>
+            <p class="kpi-value" id="live-revenue">加载中...</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#dbeafe; color:#2563eb;">👥</div>
+        <div class="kpi-content">
+            <h3>直播间 UV</h3>
+            <p class="kpi-value" id="live-uv">加载中...</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#fce7f3; color:#db2777;">❤️</div>
+        <div class="kpi-content">
+            <h3>新增粉丝</h3>
+            <p class="kpi-value" id="live-fans">加载中...</p>
+        </div>
+    </div>
+</section>
+
+<!-- 第二行 KPI - 店铺指标 -->
+<section class="kpi-grid" style="margin-top: 1rem;">
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#e0e7ff; color:#4f46e5;">🏪</div>
+        <div class="kpi-content">
+            <h3>店铺成交金额</h3>
+            <p class="kpi-value" id="shop-gmv">加载中...</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#fef9c3; color:#ca8a04;">🎬</div>
+        <div class="kpi-content">
+            <h3>开播场次</h3>
+            <p class="kpi-value" id="live-sessions">加载中...</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#f3e8ff; color:#9333ea;">📊</div>
+        <div class="kpi-content">
+            <h3>平均 GPM</h3>
+            <p class="kpi-value" id="live-gpm">加载中...</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon-box" style="background:#ccfbf1; color:#0d9488;">💎</div>
+        <div class="kpi-content">
+            <h3>UV 价值</h3>
+            <p class="kpi-value" id="live-uv-value">加载中...</p>
+        </div>
+    </div>
+</section>
+
+<!-- 趋势图 -->
+<section class="charts-grid upper-charts">
+    <div class="chart-container large">
+        <div class="chart-header">
+            <h2>📈 GMV & 营收趋势对比</h2>
+        </div>
+        <div id="liveTrendChart" class="chart-canvas"></div>
+    </div>
+</section>
+
+<!-- 第二排图表 -->
+<section class="charts-grid lower-charts">
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>🔻 流量转化漏斗</h2>
+        </div>
+        <div id="liveFunnelChart" class="chart-canvas"></div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>📊 店铺 vs 直播间成交占比</h2>
+        </div>
+        <div id="liveRatioChart" class="chart-canvas"></div>
+    </div>
+</section>
+
+<!-- 第三排图表 -->
+<section class="charts-grid lower-charts">
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>🎯 效率指标监控</h2>
+        </div>
+        <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.2rem;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 1rem;">
+                <span style="font-size: 1rem; color: #666;">店铺转化率</span>
+                <span id="metric-shop-rate" style="font-size: 1.3rem; font-weight: 700; color: #16a34a;">--%</span>
+            </div>
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 1rem;">
+                <span style="font-size: 1rem; color: #666;">店铺客单价</span>
+                <span id="metric-shop-aov" style="font-size: 1.3rem; font-weight: 700; color: #2563eb;">¥--</span>
+            </div>
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 1rem;">
+                <span style="font-size: 1rem; color: #666;">店铺退款率</span>
+                <span id="metric-refund-rate" style="font-size: 1.3rem; font-weight: 700; color: #ef4444;">--%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 1rem; color: #666;">直播成交人数</span>
+                <span id="metric-buyers" style="font-size: 1.3rem; font-weight: 700; color: #d97706;">--</span>
+            </div>
+        </div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-header">
+            <h2>⏱️ GPM 仪表盘</h2>
+        </div>
+        <div id="gpmGaugeChart" class="chart-canvas"></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function safe(val) {
+        if (!val || val === 'None' || val === '#DIV/0!' || val === '######') return 0;
+        return parseFloat(String(val).replace(/,/g, '').replace('%', '')) || 0;
+    }
+
+    async function fetchData(url) {
+        try {
+            const response = await fetch(url);
+            return await response.json();
+        } catch (error) {
+            console.error('Fetch error:', error);
+            return null;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        // 获取原始数据
+        const rawData = await fetchData('/api/live/data');
+        if (!rawData || rawData.error) {
+            console.error('Failed to load data');
+            return;
+        }
+
+        // 过滤掉空记录
+        const data = rawData.filter(row => row['统计日期'] && row['统计日期'] !== '统计日期');
+        console.log('Loaded', data.length, 'records');
+        console.log('Sample record:', data[0]);
+
+        // ============ KPI 计算 ============
+        let totalLiveGMV = 0, totalLiveRevenue = 0, totalUV = 0, totalFans = 0;
+        let totalShopGMV = 0, totalSessions = 0, totalBuyers = 0;
+        let gpmList = [], uvValueList = [], conversionList = [], aovList = [], refundRateList = [];
+
+        data.forEach(row => {
+            totalLiveGMV += safe(row['直播间GMV']);
+            totalLiveRevenue += safe(row['直播间营收']);
+            totalUV += safe(row['直播间访问人数（uv）']);
+            totalFans += safe(row['直播间新增粉丝数']);
+            totalShopGMV += safe(row['店铺成交金额']);
+            totalSessions += safe(row['开播场次']);
+            totalBuyers += safe(row['直播成交人数']);
+
+            if (row['GPM（千次展现成交）']) gpmList.push(safe(row['GPM（千次展现成交）']));
+            if (row['UV价值']) uvValueList.push(safe(row['UV价值']));
+            if (row['店铺转化率']) conversionList.push(safe(row['店铺转化率']) * 100);
+            if (row['店铺客单']) aovList.push(safe(row['店铺客单']));
+            if (row['店铺退款率']) refundRateList.push(safe(row['店铺退款率']) * 100);
+        });
+
+        const avgGPM = gpmList.length ? (gpmList.reduce((a, b) => a + b, 0) / gpmList.length).toFixed(2) : 0;
+        const avgUVValue = uvValueList.length ? (uvValueList.reduce((a, b) => a + b, 0) / uvValueList.length).toFixed(2) : 0;
+        const avgConversion = conversionList.length ? (conversionList.reduce((a, b) => a + b, 0) / conversionList.length).toFixed(2) : 0;
+        const avgAOV = aovList.length ? (aovList.reduce((a, b) => a + b, 0) / aovList.length).toFixed(2) : 0;
+        const avgRefundRate = refundRateList.length ? (refundRateList.reduce((a, b) => a + b, 0) / refundRateList.length).toFixed(2) : 0;
+
+        // ============ 更新 KPI 卡片 ============
+        document.getElementById('live-gmv').textContent = `¥${totalLiveGMV.toLocaleString()}`;
+        document.getElementById('live-revenue').textContent = `¥${totalLiveRevenue.toLocaleString()}`;
+        document.getElementById('live-uv').textContent = totalUV.toLocaleString();
+        document.getElementById('live-fans').textContent = totalFans.toLocaleString();
+        document.getElementById('shop-gmv').textContent = `¥${totalShopGMV.toLocaleString()}`;
+        document.getElementById('live-sessions').textContent = totalSessions.toLocaleString();
+        document.getElementById('live-gpm').textContent = `¥${avgGPM}`;
+        document.getElementById('live-uv-value').textContent = `¥${avgUVValue}`;
+
+        // 效率指标
+        document.getElementById('metric-shop-rate').textContent = `${avgConversion}%`;
+        document.getElementById('metric-shop-aov').textContent = `¥${avgAOV}`;
+        document.getElementById('metric-refund-rate').textContent = `${avgRefundRate}%`;
+        document.getElementById('metric-buyers').textContent = totalBuyers.toLocaleString();
+
+        // ============ 趋势图 ============
+        const trendChart = echarts.init(document.getElementById('liveTrendChart'));
+        const dates = data.map(r => r['统计日期']);
+        const gmvData = data.map(r => safe(r['直播间GMV']));
+        const revenueData = data.map(r => safe(r['直播间营收']));
+        const uvData = data.map(r => safe(r['直播间访问人数（uv）']));
+
+        trendChart.setOption({
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['GMV', '营收', 'UV'] },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: { type: 'category', data: dates },
+            yAxis: [
+                { type: 'value', name: '金额 (元)', position: 'left' },
+                { type: 'value', name: 'UV', position: 'right' }
+            ],
+            series: [
+                { name: 'GMV', type: 'line', smooth: true, data: gmvData, itemStyle: { color: '#d97706' } },
+                { name: '营收', type: 'line', smooth: true, data: revenueData, itemStyle: { color: '#16a34a' } },
+                { name: 'UV', type: 'bar', yAxisIndex: 1, data: uvData, itemStyle: { color: '#3b82f6', opacity: 0.3 } }
+            ]
+        });
+        window.addEventListener('resize', () => trendChart.resize());
+
+        // ============ 转化漏斗 ============
+        const funnelChart = echarts.init(document.getElementById('liveFunnelChart'));
+        funnelChart.setOption({
+            tooltip: { trigger: 'item' },
+            series: [{
+                name: '直播间转化', type: 'funnel', left: '10%', width: '80%', sort: 'descending',
+                label: { show: true, position: 'inside', formatter: '{b}: {c}' },
+                data: [
+                    { value: totalUV, name: '直播间UV' },
+                    { value: totalBuyers, name: '成交人数' },
+                    { value: totalFans, name: '新增粉丝' }
+                ]
+            }]
+        });
+        window.addEventListener('resize', () => funnelChart.resize());
+
+        // ============ 店铺 vs 直播间占比 ============
+        const ratioChart = echarts.init(document.getElementById('liveRatioChart'));
+        ratioChart.setOption({
+            tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
+            legend: { bottom: '5%' },
+            series: [{
+                name: '成交占比', type: 'pie', radius: ['40%', '70%'], center: ['50%', '45%'],
+                label: { show: true, formatter: '{b}\n{d}%' },
+                data: [
+                    { value: totalLiveGMV, name: '直播间GMV', itemStyle: { color: '#d97706' } },
+                    { value: totalShopGMV - totalLiveGMV, name: '店铺其他', itemStyle: { color: '#3b82f6' } }
+                ]
+            }]
+        });
+        window.addEventListener('resize', () => ratioChart.resize());
+
+        // ============ GPM 仪表盘 ============
+        const gaugeChart = echarts.init(document.getElementById('gpmGaugeChart'));
+        gaugeChart.setOption({
+            series: [{
+                type: 'gauge', startAngle: 180, endAngle: 0, min: 0, max: 10000,
+                axisLine: { lineStyle: { width: 30, color: [[0.3, '#ef4444'], [0.6, '#f59e0b'], [1, '#10b981']] } },
+                pointer: { itemStyle: { color: 'auto' } },
+                detail: { formatter: '¥{value}', fontSize: 20, offsetCenter: [0, '20%'] },
+                title: { show: true, offsetCenter: [0, '50%'] },
+                data: [{ value: avgGPM, name: '平均 GPM' }]
+            }]
+        });
+        window.addEventListener('resize', () => gaugeChart.resize());
+    });
+</script>
+{% endblock %}
